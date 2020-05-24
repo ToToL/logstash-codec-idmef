@@ -15,7 +15,7 @@ describe LogStash::Codecs::IDMEF do
     it "should return proper IDMEF XML from event" do
       codec.on_event{|data, newdata| results << newdata}
       codec.paths = {"alert.messageid" => "67a63ad4-11b9-4ee2-8aee-d1c032a13b35" }
-      event = LogStash::Event.new("@timestamp" => DateTime.parse("2020-05-24T09:05:26.758Z").to_time, "host" => "localhost.localdomain", "message" => "Login attempt", "@version" => "1")
+      event = LogStash::Event.new("@timestamp" => DateTime.parse("2020-05-24T09:05:26.758Z").to_time, "host" => "localhost.localdomain", "message" => "Login attempt", "@version" => "1", "msg" => "")
       codec.encode(event)
       insist {results.first} == expected_result
     end

@@ -463,6 +463,9 @@ class LogStash::Codecs::IDMEF < LogStash::Codecs::Base
     if @additionaldata
       idx = xml.xpath('/IDMEF-Message/Alert/AddionnalData').length
       e.to_hash.each do |key, value|
+        if value.to_s.empty?
+          next
+        end
         if value.kind_of?(Integer)
           t = "integer"
         elsif value.kind_of?(Float)

@@ -1,3 +1,6 @@
+## 0.9.2
+ - Fix empty AdditionalData
+
 ## 0.9.1
  - Fix various DTD issues
 
