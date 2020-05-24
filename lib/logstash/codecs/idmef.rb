@@ -1,6 +1,7 @@
 # encoding: utf-8
 require "logstash/codecs/base"
 
+require 'socket'
 require 'nokogiri'
 require 'json'
 require 'date'
@@ -253,7 +254,7 @@ class LogStash::Codecs::IDMEF < LogStash::Codecs::Base
                           :name => "AdditionalData",
                           "meaning" => { :type => :attr, :name => "meaning" },
                           "type" => { :type => :attr, :name => "type" },
-                          "data" => { :type => :value }
+                          "data" => { :type => :list_value, :name => :type }
                         }
   # RFC 4765: CorrelationAlert Class
   IDMEFCorrelationAlert = { :type => :class,
@@ -328,7 +329,7 @@ class LogStash::Codecs::IDMEF < LogStash::Codecs::Base
                   value = v
               end
           end
-          if value.kind_of?(Array)
+          if value.kind_of?(Array) or value.to_s.empty?
               next
           end
           if value.kind_of?(String)
@@ -373,20 +374,15 @@ class LogStash::Codecs::IDMEF < LogStash::Codecs::Base
                  if rfc[name][:format] == :datetime
                    value = DateTime.parse(value.to_s).strftime("%FT%T%:z")
                  end
-                 no = Nokogiri::XML::Node.new(rfc[name][:name], doc)
+                 n = rfc[name][:name] == :type ? curr["type"] : rfc[name][:name]
+                 no = Nokogiri::XML::Node.new(n, doc)
                  no.content = value.to_s
                  curr << no
-                 curr = no
               elsif ne_t == :attr
                  if rfc[name][:format] == :datetime
                    value = DateTime.parse(value.to_s).strftime("%FT%T%:z")
                  end
                  curr[rfc[name][:name]] = value.to_s
-              elsif ne_t == :value
-                 if rfc[name][:format] == :datetime
-                   value = DateTime.parse(value.to_s).strftime("%FT%T%:z")
-                 end
-                 curr.content = value.to_s
               end
               rfc.each do |kk, vv|
                   if vv.respond_to?(:each_pair) && vv[:default] && vv[:type] == :attr && !curr[vv[:name]]
@@ -418,12 +414,11 @@ class LogStash::Codecs::IDMEF < LogStash::Codecs::Base
     @utf8_charset.logger = self.logger
 
     @local_paths = {
-      "alert.classification.text" => ["$rule_name", "$event", "$message"],
-      "alert.detect_time" => "$@timestamp",
-      "alert.create_time" => "$@timestamp",
-      "alert.analyzer_time" => "$@timestamp",
       "alert.analyzer(0).name" => ["$product", "$devname"],
       "alert.analyzer(0).manufacturer" => "$vendor",
+      "alert.create_time" => "$@timestamp",
+      "alert.detect_time" => "$@timestamp",
+      "alert.analyzer_time" => "$@timestamp",
       "alert.source(0).node.address(0).address" => ["$srcip", "$src"],
       "alert.source(0).node.name" => ["$shost", "$srchost", "$shostname", "$srchostname", "$sname", "$srcname"],
       "alert.source(0).service.port" => ["$spt", "$sport", "$s_port"],
@@ -436,6 +431,7 @@ class LogStash::Codecs::IDMEF < LogStash::Codecs::Base
       "alert.target(0).user.user_id(0).number" => ["$uid", "$dstuid", "$duid"],
       "alert.target(0).process.name" => ["$proc", "$process"],
       "alert.target(0).process.pid" => ["$dpid", "$pid"],
+      "alert.classification.text" => ["$rule_name", "$event", "$message"],
       "alert.assessment.impact.severity" => ["$severity", "$level"],
       "alert.assessment.action.description" => ["$action"],
     }
@@ -454,13 +450,14 @@ class LogStash::Codecs::IDMEF < LogStash::Codecs::Base
     # Copy event
     e = event.clone
 
+    # Set messageid and analyzerid
+    p = { "%s.messageid" % @type => java.util.UUID.randomUUID.to_s,
+          "%s.analyzer(0).analyzerid" % @type => Socket.gethostname.to_s
+        }
+    xml = idmefpaths_to_xml(e, p)
+    
     # Set paths
-    xml = idmefpaths_to_xml(e, @allpaths)
-
-    # Set messageid
-    if !@allpaths.key?("%s.messageid" % @type)
-      xml = idmefpaths_to_xml(e, {"%s.messageid" % @type => java.util.UUID.randomUUID.to_s}, xml)
-    end
+    xml = idmefpaths_to_xml(e, @allpaths, xml)
 
     # Set Additional data
     if @additionaldata
@@ -474,8 +471,8 @@ class LogStash::Codecs::IDMEF < LogStash::Codecs::Base
           t = "string"
         end
         p = { "alert.additional_data(%d).meaning" % idx => key,
-              "alert.additional_data(%d).data" % idx => value.to_s,
               "alert.additional_data(%d).type" % idx => t,
+              "alert.additional_data(%d).data" % idx => value.to_s,
             }
         xml = idmefpaths_to_xml(e, p , xml)
         idx = idx + 1

@@ -9,7 +9,7 @@ describe LogStash::Codecs::IDMEF do
   context "encode IDMEF" do
     subject(:codec) { LogStash::Codecs::IDMEF.new }
 
-    let(:expected_result)   { %Q(<?xml version="1.0"?><idmef:IDMEF-Message xmlns:idmef="http://iana.org/idmef"><idmef:Alert messageid="67a63ad4-11b9-4ee2-8aee-d1c032a13b35"><idmef:Classification text="Login attempt"/><idmef:DetectTime>2020-05-24T09:05:26+00:00</idmef:DetectTime><idmef:CreateTime>2020-05-24T09:05:26+00:00</idmef:CreateTime><idmef:AnalyzerTime>2020-05-24T09:05:26+00:00</idmef:AnalyzerTime><idmef:Target decoy="unknown"><idmef:Node category="unknown"><idmef:name category="unknown">localhost.localdomain</idmef:name></idmef:Node></idmef:Target><idmef:AdditionalData meaning="@version" type="string">1</idmef:AdditionalData></idmef:Alert></idmef:IDMEF-Message>\n) }
+    let(:expected_result)   { %Q(<?xml version=\"1.0\"?><idmef:IDMEF-Message xmlns:idmef=\"http://iana.org/idmef\"><idmef:Alert messageid=\"67a63ad4-11b9-4ee2-8aee-d1c032a13b35\"><idmef:Analyzer analyzerid=\"localhost.localdomain\"/><idmef:CreateTime>2020-05-24T09:05:26+00:00</idmef:CreateTime><idmef:DetectTime>2020-05-24T09:05:26+00:00</idmef:DetectTime><idmef:AnalyzerTime>2020-05-24T09:05:26+00:00</idmef:AnalyzerTime><idmef:Target decoy=\"unknown\"><idmef:Node category=\"unknown\"><idmef:name>localhost.localdomain</idmef:name></idmef:Node></idmef:Target><idmef:Classification text=\"Login attempt\"/><idmef:AdditionalData meaning=\"@version\" type=\"string\"><idmef:string>1</idmef:string></idmef:AdditionalData></idmef:Alert></idmef:IDMEF-Message>\n)}
     let(:results) { []}
                       
     it "should return proper IDMEF XML from event" do

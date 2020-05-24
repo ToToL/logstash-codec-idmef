@@ -1,2 +1,5 @@
+## 0.9.1
+ - Fix various DTD issues
+
 ## 0.9.0
  - Initial release
