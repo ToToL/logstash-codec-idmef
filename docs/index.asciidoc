@@ -41,14 +41,18 @@ https://tools.ietf.org/html/rfc4765
 ===== `paths` 
 
   * Value type is <<hash,hash>>
+
   * The defautl value is an empty `hash`.
 
 This parameter let you add IDMEF paths to map from logstash event to IDMEF
 field.
 
 For example, if:
+
 * the name of your alert is in `event.get('message')`
+
 * the target host is in `event.get('host')`
+
 * the name of your analyzer is "ACME"
 
 you probably want to put this:
@@ -69,56 +73,91 @@ you probably want to put this:
 The keys of the hash are IDMEF path as described here:
 https://redmine.secef.net/projects/secef/wiki/LibPrelude_IDMEF_path 
 
-The values of the hash are values to set in final IDMEF. If a value starts with
-a `$`, then the plugin try to retrieve the value from the event.
+The values of the hash are values to set in final IDMEF. If there is %{name}
+inside the string, the plugin try to retrieve the value from the event and
+create the final string.
 
 [id="plugins-{type}s-{plugin}-defaults"]
 ===== `defaults`
 
   * Value type is <<boolean,boolean>>
+
   * Default value is `true`
 
 Try to use default paths mapping or not.
 
 Default paths are:
-* alert.classification.text: ["$rule_name", "$event", "$message"]
-* alert.detect_time: "$@timestamp"
-* alert.create_time: "$@timestamp"
-* alert.analyzer_time: "$@timestamp"
-* alert.analyzer(0).name: ["$product", "$devname"]
-* alert.analyzer(0).manufacturer: "$vendor"
-* alert.source(0).node.address(0).address: ["$srcip", "$src"]
-* alert.source(0).node.name: ["$shost", "$srchost", "$shostname", "$srchostname", "$sname", "$srcname"]
-* alert.source(0).service.port: ["$spt", "$sport", "$s_port"]
-* alert.source(0).service.name: ["$sservice", "$srcservice"]
-* alert.target(0).node.address(0).address: ["$hostip", "$dstip", "$dst", "$ip"]
-* alert.target(0).node.name: ["$host", "$hostname", "$shost", "$srchost", "$shostname", "$srchostname", "$sname", "$srcname"]
-* alert.target(0).service.port: ["$dpt", "$dport", "$d_port"]
-* alert.target(0).service.name: ["$service", "$service_id", "$dservice", "$dstservice",]
-* alert.target(0).user.user_id(0).name: ["$user", "$dstuser", "$duser"]
-* alert.target(0).user.user_id(0).number: ["$uid", "$dstuid", "$duid"]
-* alert.target(0).process.name: ["$proc", "$process"]
-* alert.target(0).process.pid: ["$dpid", "$pid"]
-* alert.assessment.impact.severity: ["$severity", "$level"]
-* alert.assessment.action.description: ["$action"]
+
+  * alert.analyzer(0).name: ["%{product}", "%{devname}"]
+
+  * alert.analyzer(0).manufacturer: ["%{vendor}"]
+
+  * alert.create_time: ["%{@timestamp}"]
+
+  * alert.detect_time: ["%{@timestamp}"]
+
+  * alert.analyzer_time: ["%{@timestamp}"]
+
+  * alert.source(0).node.address(0).address: ["%{srcip}", "%{src}"]
+
+  * alert.source(0).node.name: ["%{shost}", "%{srchost}", "%{shostname}", "%{srchostname}", "%{sname}", "%{srcname}"]
+
+  * alert.source(0).service.port: ["%{spt}", "%{sport}", "%{s_port}"]
+
+  * alert.source(0).service.name: ["%{sservice}", "%{srcservice}"]
+
+  * alert.target(0).node.address(0).address: ["%{hostip}", "%{dstip}", "%{dst}", "%{ip}"]
+
+  * alert.target(0).node.name: ["%{host}", "%{hostname}", "%{shost}", "%{srchost}", "%{shostname}", "%{srchostname}", "%{sname}", "%{srcname}"]
+
+  * alert.target(0).service.port: ["%{dpt}", "%{dport}", "%{d_port}"]
+
+  * alert.target(0).service.name: ["%{service}", "%{service_id}", "%{dservice}", "%{dstservice}"]
+
+  * alert.target(0).user.user_id(0).name: ["%{user}", "%{dstuser}", "%{duser}"]
+
+  * alert.target(0).user.user_id(0).number: ["%{uid}", "%{dstuid}", "%{duid}"]
+
+  * alert.target(0).process.name: ["%{proc}", "%{process}"]
+
+  * alert.target(0).process.pid: ["%{dpid}", "%{pid}"]
+
+  * alert.classification.text: ["%{rule_name}", "%{event}", "%{message}"]
+
+  * alert.assessment.impact.severity: ["%{severity}", "%{level}"]
+
+  * alert.assessment.action.description: ["%{action}"]
+
 
 [id="plugins-{type}s-{plugin}-additionaldata"]
 ===== `additionaldata` 
 
   * Value type is <<boolean,boolean>>
+
   * Default value is `true`
 
 When an alert is transformed in IDMEF, the remaining fields of the initial
 event are translated into IDMEF's Additional Data. If you don't want to do this
 translation, set this setting to `false`.
 
+[id="plugins-{type}s-{plugin}-validate_xml"]
+===== `validate_xml` 
+
+  * Value type is <<boolean,boolean>>
+
+  * Default value is `false`
+
+Validate the generated XML with IDMEF DTD.
+
 [id="plugins-{type}s-{plugin}-type"]
 ===== `type` 
 
   * Value type is <<string,string>>
+
   * Default value is `"alert"`
 
 IDMEF can defined two types of message:
+
 * alert
 
    RFC definition: Generally, every time an analyzer detects an event that it has
