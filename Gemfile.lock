@@ -79,7 +79,10 @@ GEM
     minitar (0.5.4)
     multi_json (1.14.1)
     multipart-post (2.1.1)
-    nokogiri (1.10.9-java)
+    nokogiri (1.14.2-java)
+      racc (~> 1.4)
+    nokogiri (1.14.2-x86_64-linux)
+      racc (~> 1.4)
     numerizer (0.1.1)
     openssl_pkcs8_pure (0.0.0.2)
     polyglot (0.3.5)
@@ -89,6 +92,8 @@ GEM
       slop (~> 3.4)
       spoon (~> 0.0)
     puma (2.16.0-java)
+    racc (1.6.2)
+    racc (1.6.2-java)
     rack (1.6.6)
     rack-protection (1.5.5)
       rack
@@ -128,6 +133,7 @@ GEM
 
 PLATFORMS
   java
+  x86_64-linux
 
 DEPENDENCIES
   insist
